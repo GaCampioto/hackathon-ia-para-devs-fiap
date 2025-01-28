@@ -22,7 +22,7 @@ results = model.predict(
     save=True,         # Salvar imagens com anotações
     save_txt=True,     # Salvar os resultados em formato texto (opcional)
     project=OUTPUT_DIR,  # Diretório raiz para salvar os resultados
-    name="predictions",  # Subdiretório específico
+    name="results",  # Subdiretório específico
     conf=0.5           # Confiança mínima para detecção
 )
 
