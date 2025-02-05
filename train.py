@@ -1,24 +1,26 @@
+import os
 from ultralytics import YOLO
 
-# Caminho para o arquivo de configuração do dataset
-DATA_YAML = "datasets/data.yaml"  # Atualize com o caminho correto para o seu data.yaml
+# 1️⃣ Carregar o modelo YOLO pré-treinado
+os.environ['YOLO_RESULTS_DIR'] = "/content/runs"
+model = YOLO("yolov5s.pt")  # Modelo inicial, caso vá rodar com o pré treinado é só trocar pelo nome do pré treinado.
 
-# Passo 1: Carregar o modelo pré-treinado YOLOv5
-# model = YOLO("yolov5s.pt")  # Baixa o modelo pré-treinado pequeno
-model = YOLO("armas_brancas_e_armas_de_fogo.pt")
+# 2️⃣ Caminho atualizado do data.yaml
+data_yaml_path = "/PATH_TO/data.yaml"
 
-# # Passo 2: Treinar o modelo com o dataset
-# model.train(
-#     data=DATA_YAML,  # Configuração do dataset
-#     epochs=50,       # Número de épocas
-#     imgsz=640,       # Tamanho das imagens (em pixels)
-#     batch=16,        # Tamanho do lote
-#     name="armas_brancas_e_armas_de_fogo"  # Nome do experimento
-# )
+# 3️⃣ Iniciar o treinamento com os dados locais
+model.train(
+    data="/PATH_TO/data.yaml",
+    epochs=100,  # Inicialmente treinamos com 50
+    imgsz=640,
+    batch=16,
+    patience=10,  # Para early stopping automático
+    lr0=0.001,  # Taxa de aprendizado inicial
+    optimizer="SGD"
+)
 
-# Passo 3: Salvar o modelo treinado
-# model.save("armas_brancas_e_armas_de_fogo.pt")
+# 4️⃣ Salvar o modelo treinado
+model_path = "/PATH_TO/armas_brancas.pt"
+model.save(model_path)
 
-# Passo 4: Testar o modelo treinado com novas imagens
-results = model.predict(source="faca.jpeg", save=True, conf=0.5)
-print(results)
+print("Modelo treinado com sucesso!")

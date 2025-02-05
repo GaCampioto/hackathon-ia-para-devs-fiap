@@ -1,6 +1,0 @@
-test: ./images/test
-train: ./images/train
-val: ./images/val
-
-nc: 2  # Número de classes (ajuste conforme necessário)
-names: ['armas-brancas', 'armas-de-fogo']  # Nomes das classes

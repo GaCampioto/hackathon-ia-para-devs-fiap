@@ -1,34 +1,81 @@
-from ultralytics import YOLO
+import base64
 import os
+import requests
+from ultralytics import YOLO
+import cv2
 
-# Caminho para o modelo treinado
-MODEL_PATH = "armas_brancas_e_armas_de_fogo.pt"
+def processar_video(video_input, modelo_yolo, intervalo=15):
+    """Processa um vídeo detectando facas com YOLO e enviando alertas via WhatsApp."""
+    model = YOLO(modelo_yolo)
 
-# Diretório com as imagens de teste
-TEST_DIR = "./datasets/images/test/"  # Substitua pelo caminho da sua pasta
+    # Criar pasta para armazenar frames capturados
+    frames_path = "/content/frames_alerta/"
+    os.makedirs(frames_path, exist_ok=True)
 
-# Diretório de saída personalizado
-OUTPUT_DIR = "./predictions/"  # Altere para o diretório desejado
+    # Abrir o vídeo para leitura
+    cap = cv2.VideoCapture(video_input)
+    frame_count = 0
 
-# Certifique-se de que o diretório de saída existe
-os.makedirs(OUTPUT_DIR, exist_ok=True)
+    while cap.isOpened():
+        ret, frame = cap.read()
+        if not ret:
+            break  # Fim do vídeo
 
-# Carrega o modelo treinado
-model = YOLO(MODEL_PATH)
+        frame_count += 1
+        if frame_count % intervalo != 0:  # Capturar frame a cada 'intervalo' frames
+            continue
 
-# Realiza predições em todas as imagens da pasta de teste
-results = model.predict(
-    source=TEST_DIR,   # Diretório de entrada
-    save=True,         # Salvar imagens com anotações
-    save_txt=True,     # Salvar os resultados em formato texto (opcional)
-    project=OUTPUT_DIR,  # Diretório raiz para salvar os resultados
-    name="results",  # Subdiretório específico
-    conf=0.5           # Confiança mínima para detecção
-)
+        # Fazer inferência no frame atual
+        results = model.predict(frame, conf=0.12)
 
-# Exibe os resultados
-print("Resultados da Detecção:")
-for result in results:
-    print(result)
+        # Verificar se detectou uma faca (classe 'arma_branca' no YOLO)
+        for result in results:
+            for box in result.boxes:
+                class_id = int(box.cls[0].item())
+                if class_id == 0:  # Classe 0 = Faca (segundo nosso treinamento)
+                    frame_filename = os.path.join(frames_path, f"alerta_faca_{frame_count}.jpg")
+                    cv2.imwrite(frame_filename, frame)  # Salvar frame do alerta
+                    print(f"⚠️ Faca detectada no frame {frame_count}, imagem salva: {frame_filename}")
 
-print(f"Imagens processadas salvas em: {os.path.join(OUTPUT_DIR, 'predictions')}")
+                    # Converter imagem para Base64 e enviar alerta
+                    base64_image = convert_image_to_base64(frame_filename)
+                    enviar_alerta_whatsapp(base64_image)
+
+    cap.release()
+    cv2.destroyAllWindows()
+    print("Processamento do vídeo concluído!")
+
+# Função para enviar um frame via Evolution API (WhatsApp)
+def enviar_alerta_whatsapp(base64Image):
+    url = "EVOLUTION_API_URL"
+    headers = {
+        "Content-Type": "application/json",
+        "apikey": "EVOLUTION_API_KEY"
+    }
+
+
+    data = {
+        "number": "EVOLUTION_API_URL",
+        "options": {
+            "delay": 1200,
+            "presence": "composing"
+        },
+        "mediaMessage": {
+            "mediatype": "image",
+            "caption": f"⚠️ Alerta! Uma faca foi detectada! 🚨",
+            "media": base64Image
+        }
+    }
+
+    response = requests.post(url, json=data, headers=headers)
+    print(f"✅ retorno : {response.text}")
+
+
+def convert_image_to_base64(image_path):
+    with open(image_path, "rb") as image_file:
+        base64_image = base64.b64encode(image_file.read()).decode("utf-8")
+        return base64_image
+
+processar_video("/content/videos/video.mp4", "/content/armas_brancas_best.pt",30)
+
+processar_video("/content/videos/video2.mp4", "/content/armas_brancas_best.pt",3)
