@@ -3,13 +3,21 @@ import os
 import requests
 from ultralytics import YOLO
 import cv2
+import importlib
+import config  # Primeiro, importe normalmente
+importlib.reload(config)  # Força o reload do módulo
+
+from config import EVOLUTION_API_URL, EVOLUTION_API_KEY, WHATSAPP_NUMBER  # Importa as configurações
+
+
+
 
 def processar_video(video_input, modelo_yolo, intervalo=15):
     """Processa um vídeo detectando facas com YOLO e enviando alertas via WhatsApp."""
     model = YOLO(modelo_yolo)
 
     # Criar pasta para armazenar frames capturados
-    frames_path = "/content/frames_alerta/"
+    frames_path = "./frames_alerta/"
     os.makedirs(frames_path, exist_ok=True)
 
     # Abrir o vídeo para leitura
@@ -47,15 +55,15 @@ def processar_video(video_input, modelo_yolo, intervalo=15):
 
 # Função para enviar um frame via Evolution API (WhatsApp)
 def enviar_alerta_whatsapp(base64Image):
-    url = "EVOLUTION_API_URL"
+    url = EVOLUTION_API_URL
     headers = {
         "Content-Type": "application/json",
-        "apikey": "EVOLUTION_API_KEY"
+        "apikey": EVOLUTION_API_KEY
     }
 
 
     data = {
-        "number": "EVOLUTION_API_URL",
+        "number": WHATSAPP_NUMBER,
         "options": {
             "delay": 1200,
             "presence": "composing"
@@ -76,6 +84,6 @@ def convert_image_to_base64(image_path):
         base64_image = base64.b64encode(image_file.read()).decode("utf-8")
         return base64_image
 
-processar_video("/content/videos/video.mp4", "/content/armas_brancas_best.pt",30)
+processar_video("./videos/video.mp4", "./armas_brancas_best.pt",30)
 
-processar_video("/content/videos/video2.mp4", "/content/armas_brancas_best.pt",3)
+processar_video("./videos/video2.mp4", "./armas_brancas_best.pt",3)

@@ -29,6 +29,12 @@ Após finalizado o treinamento é possível testar o modelo e as notificações 
 ```
 python test.py
 ```
+No arquivo config você pode configurar os dados da api de envio de mensagens e o destinatário.
+
+```
+config.py
+```
+
 
 ## Métricas do treinamento
 ```
