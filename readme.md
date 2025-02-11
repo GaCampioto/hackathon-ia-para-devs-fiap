@@ -10,7 +10,7 @@ A empresa tem o objetivo de validar a viabilidade dessa feature, e para isso ser
 - Construir ou buscar um dataset contendo imagens de facas, tesouras e outros objetos cortantes em diferentes condições de ângulo e iluminação.
 - Anotar o dataset para treinar o modelo supervisionado, incluindo imagens negativas (sem objetos perigosos) para reduzir falsos positivos.
 - Treinar o modelo
-- Desenvolver um sistema de alertas (pode ser e-mail)
+- Desenvolver um sistema de alertas (utilizamos alertas via whatsapp)
 
 ## Solução
 Primeiramente buscamos um dataset contendo diversas armas brancas para que pudessemos fazer o treinamento do nosso modelo. O dataset escolhido foi [weapon-detection-knifes](https://universe.roboflow.com/morcik-fix/weapon-detection-knifes-mohip-kmkw6).
